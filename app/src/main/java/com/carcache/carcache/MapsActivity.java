@@ -6,6 +6,7 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.Toast;
 import android.util.Log;
+import java.util.Date;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
@@ -84,8 +85,19 @@ public class MapsActivity extends FragmentActivity
             String msg = "Longitude: " + lon + " Latitude: " + lat;
             //Toast.makeText(getApplicationContext(), msg, Toast.LENGTH_SHORT);
             Log.v(MAP_LOGGER, msg);
+            CCuser test1 = new CCuser(new Date(),loc);
+
+            String msg2 = "Date: "+ test1.getDate().toString();
+            Log.v("Date", msg2);
+
+            double lat1 = test1.getLocation().getLatitude();
+            double lon1 = test1.getLocation().getLongitude();
+            String msg1 = "Longitude: " + lon1 + " Latitude: " + lat1;
+            Log.v("Location",msg1);
         }
     }
+
+
 
     @Override
     public boolean onMyLocationButtonClick() {
