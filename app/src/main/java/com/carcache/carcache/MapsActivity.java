@@ -1,9 +1,12 @@
 package com.carcache.carcache;
 
+import android.bluetooth.BluetoothAdapter;
+import android.bluetooth.BluetoothDevice;
 import android.location.Location;
 import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
 import android.view.View;
+import android.widget.ArrayAdapter;
 import android.widget.Toast;
 import android.util.Log;
 
@@ -15,6 +18,10 @@ import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
 
 public class MapsActivity extends FragmentActivity
         implements
@@ -47,6 +54,19 @@ public class MapsActivity extends FragmentActivity
                 .addConnectionCallbacks(this)
                 .addOnConnectionFailedListener(this)
                 .build();
+
+        BluetoothAdapter mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
+        Set<BluetoothDevice> pairedDevices = mBluetoothAdapter.getBondedDevices();
+
+        List<String> s = new ArrayList<String>();
+        for (BluetoothDevice bt : pairedDevices) {
+            s.add(bt.getName());
+        }
+
+        for (String st : s) {
+            Log.v(MAP_LOGGER, st);
+        }
+        //setListAdapter(new ArrayAdapter<String>(this, R.layout.list, s));
     }
 
 
