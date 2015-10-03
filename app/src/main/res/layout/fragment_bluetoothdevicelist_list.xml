@@ -1,15 +1,33 @@
 <?xml version="1.0" encoding="utf-8"?>
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools" android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:orientation="vertical"
+    tools:context="com.carcache.carcache.BluetoothDeviceListFragment" >
 
-    tools:context="com.carcache.carcache.BluetoothDeviceListFragment">
+    <TextView
+        android:text="@string/select_car"
+        android:background="@color/white"
+        android:layout_height="wrap_content"
+        android:layout_width="match_parent"
+        android:paddingTop="10dp"
+        android:paddingBottom="10dp"
+        android:paddingLeft="15dp"
+        android:paddingRight="15dp"
+        android:layout_gravity="center"
+        android:textSize="20sp" />
 
-    <ListView android:id="@android:id/list" android:layout_width="match_parent"
+    <FrameLayout
         android:layout_height="match_parent"
-        android:background="@color/colorPrimary"/>
+        android:layout_width="match_parent" >
 
-    <TextView android:id="@android:id/empty" android:layout_width="match_parent"
-        android:layout_height="match_parent" android:gravity="center" />
+        <ListView android:id="@android:id/list" android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="@color/white"/>
 
-</FrameLayout>
+        <TextView android:id="@android:id/empty" android:layout_width="match_parent"
+            android:layout_height="match_parent" android:gravity="center" />
+
+    </FrameLayout>
+</LinearLayout>

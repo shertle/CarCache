@@ -94,8 +94,8 @@ public class BluetoothDeviceListFragment extends Fragment implements AbsListView
         }
 
         // TODO: Change Adapter to display your content
-        mAdapter = new ArrayAdapter<DummyContent.DummyItem>(getActivity(),
-                android.R.layout.simple_list_item_1, android.R.id.text1, DummyContent.ITEMS);
+        mAdapter = new ArrayAdapter<String>(getActivity(),
+                android.R.layout.simple_list_item_1, android.R.id.text1, s);
     }
 
     @Override
@@ -132,11 +132,13 @@ public class BluetoothDeviceListFragment extends Fragment implements AbsListView
 
     @Override
     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+        /*
         if (null != mListener) {
             // Notify the active callbacks interface (the activity, if the
             // fragment is attached to one) that an item has been selected.
-            mListener.onFragmentInteraction(DummyContent.ITEMS.get(position).id);
+            mListener.onFragmentInteraction(s.get(position).id);
         }
+        */
     }
 
     /**
