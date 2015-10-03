@@ -1,5 +1,36 @@
+<!--
 <fragment xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     xmlns:map="http://schemas.android.com/apk/res-auto" android:layout_width="match_parent"
     android:layout_height="match_parent" android:id="@+id/map" tools:context=".MapsActivity"
     android:name="com.google.android.gms.maps.SupportMapFragment" />
+
+
+-->
+
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+    <fragment
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        android:id="@+id/map"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        class="com.google.android.gms.maps.SupportMapFragment"/>
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|right"
+        android:background="#D000"
+        android:orientation="vertical"
+        android:padding="5dp">
+        <Button
+            android:id="@+id/get_my_location_button"
+            android:padding="8dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:onClick="showMyLocation"
+            android:text="@string/my_location"/>
+    </LinearLayout>
+</RelativeLayout>
