@@ -1,6 +1,7 @@
 package com.carcache.carcache.Connectors;
 
 import android.location.Location;
+import android.os.AsyncTask;
 import android.util.Log;
 
 import com.carcache.carcache.Models.CCuser;
@@ -21,7 +22,7 @@ import java.net.URL;
  */
 public class WebServiceConnector {
 
-    private static String webServiceURL = "localhost:8888/sendCarMoveLocation.php";
+    private static String webServiceURL = "http://52.24.88.114/sendCarMoveLocation.php";
     private static String TAG = "WebServiceConnector";
 
     /**
@@ -29,77 +30,78 @@ public class WebServiceConnector {
      * @param locationToSend - location to send
      * @return true if post request successful, false else
      */
-    public boolean sendLocation(CCuser locationToSend){
+    public void sendLocation(CCuser locationToSend){
 
-        URL url = null;
+        SendLocationTask sendLocationTask = new SendLocationTask();
+        sendLocationTask.execute(locationToSend);
 
-        try{
+    }
 
-            // try establish connection to the web service
-            url = new URL(webServiceURL);
-            HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-            connection.setDoInput (true);
-            connection.setDoOutput(true);
-            connection.setUseCaches(false);
-            connection.setRequestProperty("Content-Type", "application/json");
-            connection.connect();
+    public class SendLocationTask extends AsyncTask<CCuser,Void,Void>{
 
-            // create JSON object.
-            JSONObject jsonParam = new JSONObject();
-            jsonParam.put("timestamp",locationToSend.getDate().getTime()/1000); //getTime() returns milliseconds since epoch
+        @Override
+        protected Void doInBackground(CCuser... params) {
+            URL url = null;
 
-            Location location = locationToSend.getLocation();
+            try{
 
-            jsonParam.put("latitude",location.getLatitude());
-            jsonParam.put("longitude", location.getLongitude());
+                // try establish connection to the web service
+                url = new URL(webServiceURL);
+                HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+                connection.setDoInput (true);
+                connection.setDoOutput(true);
+                connection.setUseCaches(false);
+                connection.setRequestProperty("Content-Type", "application/json");
+                connection.connect();
 
-            //convert JSON to string and get bytes encoded in UTF-8
-            String str = jsonParam.toString();
-            byte[] data=str.getBytes("UTF-8");
+                // create JSON object.
+                JSONObject jsonParam = new JSONObject();
+                jsonParam.put("timestamp",params[0].getDate().getTime()/1000); //getTime() returns milliseconds since epoch
+                Location location = params[0].getLocation();
 
-            DataOutputStream printout = new DataOutputStream(connection.getOutputStream ());
-            printout.write(data);
-            printout.flush();
-            printout.close();
+                jsonParam.put("latitude",location.getLatitude());
+                jsonParam.put("longitude", location.getLongitude());
 
-            // read response from server.
-            int HttpResult = connection.getResponseCode();
-            if(HttpResult ==HttpURLConnection.HTTP_OK) {
+                //convert JSON to string and get bytes encoded in UTF-8
+                String str = jsonParam.toString();
+                byte[] data=str.getBytes("UTF-8");
 
-                BufferedReader br = new BufferedReader(new InputStreamReader(
-                        connection.getInputStream(),"utf-8"));
-                String line = null;
-                StringBuilder sb = new StringBuilder();
-                while ((line = br.readLine()) != null) {
-                    sb.append(line + "\n");
-                }
-                br.close();
+                DataOutputStream printout = new DataOutputStream(connection.getOutputStream ());
+                printout.write(data);
+                printout.flush();
+                printout.close();
 
-                // print out response.
-                Log.e(TAG,""+sb.toString());
+                // read response from server.
+                int HttpResult = connection.getResponseCode();
+                if(HttpResult ==HttpURLConnection.HTTP_OK) {
 
-                JSONObject serverResponseJSON = new JSONObject(sb.toString());
-                int responseCode = serverResponseJSON.getInt("resultCode");
-                Log.e(TAG,"Server resposeCode was: " + responseCode);
-                if(responseCode == 0){
-                    return true;
+                    BufferedReader br = new BufferedReader(new InputStreamReader(
+                            connection.getInputStream(),"utf-8"));
+                    String line = null;
+                    StringBuilder sb = new StringBuilder();
+                    while ((line = br.readLine()) != null) {
+                        sb.append(line + "\n");
+                    }
+                    br.close();
+
+                    // print out response.
+                    Log.e(TAG,""+sb.toString());
+
+                    JSONObject serverResponseJSON = new JSONObject(sb.toString());
+                    int responseCode = serverResponseJSON.getInt("resultCode");
+                    Log.e(TAG,"Server response code was: " + responseCode);
                 }
                 else{
-                    return false;
+                    Log.e(TAG,"HttpResult was not OK");
                 }
-            }
-            else{
-                Log.e(TAG,"HttpResult was not OK");
-                return false;
-            }
 
 
             }catch(Exception e){
-            e.printStackTrace();
-            return false;
-        }
-        
+                e.printStackTrace();
+            }
 
+            return null;
+        }
     }
 
 }
