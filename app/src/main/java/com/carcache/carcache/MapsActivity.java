@@ -1,5 +1,6 @@
 package com.carcache.carcache;
 
+import android.content.Context;
 import android.location.Location;
 import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
@@ -8,6 +9,8 @@ import android.widget.Toast;
 import android.util.Log;
 import java.util.Date;
 import java.util.ArrayList;
+import android.location.Criteria;
+import android.location.LocationManager;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
@@ -17,8 +20,10 @@ import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.android.gms.maps.CameraUpdateFactory;
 
 public class MapsActivity extends FragmentActivity
         implements
@@ -46,11 +51,13 @@ public class MapsActivity extends FragmentActivity
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
 
+
         mGoogleApiClient = new GoogleApiClient.Builder(this)
                 .addApi(LocationServices.API)
                 .addConnectionCallbacks(this)
                 .addOnConnectionFailedListener(this)
                 .build();
+
     }
 
 
@@ -70,6 +77,14 @@ public class MapsActivity extends FragmentActivity
 
 
         mMap = googleMap;
+
+
+        LocationManager locationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
+        Location myLoc = locationManager.getLastKnownLocation(locationManager.getBestProvider(new Criteria(), true));
+
+        mMap.moveCamera(CameraUpdateFactory.newLatLng(new LatLng(myLoc.getLatitude(), myLoc.getLongitude())));
+        mMap.animateCamera(CameraUpdateFactory.zoomTo(15));
+        mMap.addMarker(new MarkerOptions().position(new LatLng(myLoc.getLatitude(), myLoc.getLongitude())).title("You").icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_AZURE)));
         /*
         mMap.addMarker(new MarkerOptions().position(sydney).title("Marker in Sydney"));
         mMap.moveCamera(CameraUpdateFactory.newLatLng(sydney));
@@ -101,12 +116,12 @@ public class MapsActivity extends FragmentActivity
 
             Location loc1 = new Location(loc);
             ArrayList<CCuser> markers = new ArrayList<>();
-            loc1.setLatitude(loc.getLatitude()+10);
+            loc1.setLatitude(loc.getLatitude() + 10);
             loc1.setLongitude(loc.getLongitude() + 10);
-            markers.add(new CCuser(new Date(),loc1));
+            markers.add(new CCuser(new Date(), loc1));
 
             Location loc2 = new Location(loc);
-            loc2.setLatitude(loc.getLatitude()+20);
+            loc2.setLatitude(loc.getLatitude() + 20);
             loc2.setLongitude(loc.getLongitude() + 20);
             markers.add(new CCuser(new Date(),loc2));
 
