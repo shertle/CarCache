@@ -1,11 +1,20 @@
 package com.carcache.carcache;
 
+/*
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentTransaction;
+import android.support.v4.app.FragmentManager;
+*/
+import android.app.FragmentManager;
+import android.app.Fragment;
+import android.app.FragmentTransaction;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.location.Location;
 import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.Toast;
 import android.util.Log;
@@ -29,7 +38,8 @@ public class MapsActivity extends FragmentActivity
         GoogleApiClient.OnConnectionFailedListener,
         LocationListener,
         GoogleMap.OnMyLocationButtonClickListener,
-        OnMapReadyCallback {
+        OnMapReadyCallback,
+        BluetoothDeviceListFragment.OnFragmentInteractionListener {
 
     public static final String MAP_LOGGER = "MAP_LOGGER";
     private GoogleApiClient mGoogleApiClient;
@@ -66,6 +76,14 @@ public class MapsActivity extends FragmentActivity
         for (String st : s) {
             Log.v(MAP_LOGGER, st);
         }
+
+        FragmentManager fragmentManager = getFragmentManager();
+        FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+
+        Fragment fragment = new BluetoothDeviceListFragment();
+        fragmentTransaction.replace(R.id.fragment_container, fragment);
+        fragmentTransaction.commit();
+
         //setListAdapter(new ArrayAdapter<String>(this, R.layout.list, s));
     }
 
@@ -105,6 +123,9 @@ public class MapsActivity extends FragmentActivity
             //Toast.makeText(getApplicationContext(), msg, Toast.LENGTH_SHORT);
             Log.v(MAP_LOGGER, msg);
         }
+
+
+
     }
 
     @Override
@@ -147,5 +168,9 @@ public class MapsActivity extends FragmentActivity
     public void onPause() {
         super.onPause();
         mGoogleApiClient.disconnect();
+    }
+
+    public void onFragmentInteraction(String id) {
+        // Do nothing
     }
 }
