@@ -1,7 +1,10 @@
 package com.carcache.carcache;
 
+
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
+import android.content.Context;
+import android.content.Intent;
 import android.location.Location;
 import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
@@ -10,6 +13,9 @@ import android.widget.ArrayAdapter;
 import android.widget.Toast;
 import android.util.Log;
 import java.util.Date;
+import java.util.ArrayList;
+import android.location.Criteria;
+import android.location.LocationManager;
 
 import com.carcache.carcache.Connectors.WebServiceConnector;
 import com.carcache.carcache.Models.CCuser;
@@ -21,6 +27,10 @@ import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
+import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.android.gms.maps.CameraUpdateFactory;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -36,7 +46,7 @@ public class MapsActivity extends FragmentActivity
 
     public static final String MAP_LOGGER = "MAP_LOGGER";
     private GoogleApiClient mGoogleApiClient;
-    //private GoogleMap mMap;
+    private GoogleMap mMap;
 
     private static final LocationRequest REQUEST = LocationRequest.create()
             .setInterval(5000)          // 5 seconds
@@ -52,11 +62,13 @@ public class MapsActivity extends FragmentActivity
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
 
+
         mGoogleApiClient = new GoogleApiClient.Builder(this)
                 .addApi(LocationServices.API)
                 .addConnectionCallbacks(this)
                 .addOnConnectionFailedListener(this)
                 .build();
+
 
         BluetoothAdapter mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
         Set<BluetoothDevice> pairedDevices = mBluetoothAdapter.getBondedDevices();
@@ -70,6 +82,7 @@ public class MapsActivity extends FragmentActivity
             Log.v(MAP_LOGGER, st);
         }
         //setListAdapter(new ArrayAdapter<String>(this, R.layout.list, s));
+
     }
 
 
@@ -87,8 +100,17 @@ public class MapsActivity extends FragmentActivity
         googleMap.setMyLocationEnabled(true);
         googleMap.setOnMyLocationButtonClickListener(this);
 
-        /*
+
         mMap = googleMap;
+
+
+        LocationManager locationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
+        Location myLoc = locationManager.getLastKnownLocation(locationManager.getBestProvider(new Criteria(), true));
+
+        mMap.moveCamera(CameraUpdateFactory.newLatLng(new LatLng(myLoc.getLatitude(), myLoc.getLongitude())));
+        mMap.animateCamera(CameraUpdateFactory.zoomTo(15));
+        mMap.addMarker(new MarkerOptions().position(new LatLng(myLoc.getLatitude(), myLoc.getLongitude())).title("You").icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_AZURE)));
+        /*
         mMap.addMarker(new MarkerOptions().position(sydney).title("Marker in Sydney"));
         mMap.moveCamera(CameraUpdateFactory.newLatLng(sydney));
         */
@@ -115,13 +137,51 @@ public class MapsActivity extends FragmentActivity
             double lat1 = test1.getLocation().getLatitude();
             double lon1 = test1.getLocation().getLongitude();
             String msg1 = "Longitude: " + lon1 + " Latitude: " + lat1;
+
             Log.v("Location",msg1);
 
             Log.v("WebService Connect","Sending new location to web service.");
             WebServiceConnector connector = new WebServiceConnector();
             connector.sendLocation(test1);
+
+
+            Location loc1 = new Location(loc);
+            ArrayList<CCuser> markers = new ArrayList<>();
+            loc1.setLatitude(loc.getLatitude() + 10);
+            loc1.setLongitude(loc.getLongitude() + 10);
+            markers.add(new CCuser(new Date(), loc1));
+
+            Location loc2 = new Location(loc);
+            loc2.setLatitude(loc.getLatitude() + 20);
+            loc2.setLongitude(loc.getLongitude() + 20);
+            markers.add(new CCuser(new Date(),loc2));
+
+
+            displayMarker(markers);
+
         }
     }
+
+    public void refresh(View view)
+    {
+        finish();
+        startActivity(getIntent().addFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION));
+    }
+
+    /**
+     * Recieves array of markers of nearby CCusers and pin point the location of
+     * such users on the map
+     */
+    public void displayMarker(ArrayList<CCuser> markers)
+    {
+        for(CCuser m : markers)
+        {
+            Location l = m.getLocation();
+            mMap.addMarker(new MarkerOptions()
+                    .position(new LatLng(l.getLatitude(), l.getLongitude())));
+        }
+    }
+
 
 
 
