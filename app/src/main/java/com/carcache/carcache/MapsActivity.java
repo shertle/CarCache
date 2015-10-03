@@ -16,6 +16,10 @@ import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.android.gms.maps.CameraUpdateFactory;
+
 
 public class MapsActivity extends FragmentActivity
         implements
@@ -27,7 +31,7 @@ public class MapsActivity extends FragmentActivity
 
     public static final String MAP_LOGGER = "MAP_LOGGER";
     private GoogleApiClient mGoogleApiClient;
-    //private GoogleMap mMap;
+    private GoogleMap mMap;
 
     private static final LocationRequest REQUEST = LocationRequest.create()
             .setInterval(5000)          // 5 seconds
@@ -65,8 +69,9 @@ public class MapsActivity extends FragmentActivity
         googleMap.setMyLocationEnabled(true);
         googleMap.setOnMyLocationButtonClickListener(this);
 
-        /*
+
         mMap = googleMap;
+        /*
         mMap.addMarker(new MarkerOptions().position(sydney).title("Marker in Sydney"));
         mMap.moveCamera(CameraUpdateFactory.newLatLng(sydney));
         */
@@ -93,10 +98,39 @@ public class MapsActivity extends FragmentActivity
             double lat1 = test1.getLocation().getLatitude();
             double lon1 = test1.getLocation().getLongitude();
             String msg1 = "Longitude: " + lon1 + " Latitude: " + lat1;
-            Log.v("Location",msg1);
+            Log.v("Location", msg1);
+
+            Location loc1 = new Location(loc);
+            CCuser[] markers = new CCuser[2];
+            loc1.setLatitude(loc.getLatitude()+10);
+            loc1.setLongitude(loc.getLongitude() + 10);
+            markers[0] = new CCuser(new Date(),loc1);
+
+            Location loc2 = new Location(loc);
+            loc2.setLatitude(loc.getLatitude()+20);
+            loc2.setLongitude(loc.getLongitude() + 20);
+            markers[1] = new CCuser(new Date(),loc2);
+
+            
+            receiveMarker(markers);
+
         }
     }
 
+    /**
+     * Recieves array of markers of nearby CCusers and pin point the location of
+     * such users on the map
+     */
+    public void receiveMarker(CCuser[] markers)
+    {
+        for(CCuser m : markers)
+        {
+            Location l = m.getLocation();
+            mMap.addMarker(new MarkerOptions()
+                    .position(new LatLng(l.getLatitude(), l.getLongitude())));
+            mMap.moveCamera(CameraUpdateFactory.newLatLng(new LatLng(l.getLatitude(), l.getLongitude())));
+        }
+    }
 
 
     @Override
