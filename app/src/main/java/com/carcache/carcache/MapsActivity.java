@@ -1,12 +1,18 @@
 package com.carcache.carcache;
 
+import android.bluetooth.BluetoothAdapter;
+import android.bluetooth.BluetoothDevice;
 import android.location.Location;
 import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
 import android.view.View;
+import android.widget.ArrayAdapter;
 import android.widget.Toast;
 import android.util.Log;
+import java.util.Date;
 
+import com.carcache.carcache.Connectors.WebServiceConnector;
+import com.carcache.carcache.Models.CCuser;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.LocationListener;
@@ -15,6 +21,10 @@ import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
 
 public class MapsActivity extends FragmentActivity
         implements
@@ -47,6 +57,19 @@ public class MapsActivity extends FragmentActivity
                 .addConnectionCallbacks(this)
                 .addOnConnectionFailedListener(this)
                 .build();
+
+        BluetoothAdapter mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
+        Set<BluetoothDevice> pairedDevices = mBluetoothAdapter.getBondedDevices();
+
+        List<String> s = new ArrayList<String>();
+        for (BluetoothDevice bt : pairedDevices) {
+            s.add(bt.getName());
+        }
+
+        for (String st : s) {
+            Log.v(MAP_LOGGER, st);
+        }
+        //setListAdapter(new ArrayAdapter<String>(this, R.layout.list, s));
     }
 
 
@@ -84,8 +107,23 @@ public class MapsActivity extends FragmentActivity
             String msg = "Longitude: " + lon + " Latitude: " + lat;
             //Toast.makeText(getApplicationContext(), msg, Toast.LENGTH_SHORT);
             Log.v(MAP_LOGGER, msg);
+            CCuser test1 = new CCuser(new Date(),loc);
+
+            String msg2 = "Date: "+ test1.getDate().toString();
+            Log.v("Date", msg2);
+
+            double lat1 = test1.getLocation().getLatitude();
+            double lon1 = test1.getLocation().getLongitude();
+            String msg1 = "Longitude: " + lon1 + " Latitude: " + lat1;
+            Log.v("Location",msg1);
+
+            Log.v("WebService Connect","Sending new location to web service.");
+            WebServiceConnector connector = new WebServiceConnector();
+            connector.sendLocation(test1);
         }
     }
+
+
 
     @Override
     public boolean onMyLocationButtonClick() {
