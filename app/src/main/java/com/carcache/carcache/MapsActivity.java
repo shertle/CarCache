@@ -12,12 +12,9 @@ import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.LocationListener;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
-import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
-import com.google.android.gms.maps.model.LatLng;
-import com.google.android.gms.maps.model.MarkerOptions;
 
 public class MapsActivity extends FragmentActivity
         implements
@@ -81,12 +78,11 @@ public class MapsActivity extends FragmentActivity
     public void showMyLocation(View view) {
         Log.v(MAP_LOGGER, "is connected: " + mGoogleApiClient.isConnected());
         if (mGoogleApiClient.isConnected()) {
-            Log.v(MAP_LOGGER, "here");
             Location loc = LocationServices.FusedLocationApi.getLastLocation(mGoogleApiClient);
             double lat = loc.getLatitude();
             double lon = loc.getLongitude();
             String msg = "Longitude: " + lon + " Latitude: " + lat;
-            Toast.makeText(getApplicationContext(), msg, Toast.LENGTH_SHORT);
+            //Toast.makeText(getApplicationContext(), msg, Toast.LENGTH_SHORT);
             Log.v(MAP_LOGGER, msg);
         }
     }
@@ -100,7 +96,7 @@ public class MapsActivity extends FragmentActivity
 
     @Override
     public void onLocationChanged(Location location) {
-
+        // Do nothing
     }
 
     @Override
