@@ -111,7 +111,7 @@ public class MapsActivity extends FragmentActivity
             loc2.setLongitude(loc.getLongitude() + 20);
             markers[1] = new CCuser(new Date(),loc2);
 
-            
+
             receiveMarker(markers);
 
         }
@@ -128,7 +128,6 @@ public class MapsActivity extends FragmentActivity
             Location l = m.getLocation();
             mMap.addMarker(new MarkerOptions()
                     .position(new LatLng(l.getLatitude(), l.getLongitude())));
-            mMap.moveCamera(CameraUpdateFactory.newLatLng(new LatLng(l.getLatitude(), l.getLongitude())));
         }
     }
 
