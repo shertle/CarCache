@@ -1,6 +1,7 @@
 package com.carcache.carcache;
 
 import android.content.Context;
+import android.content.Intent;
 import android.location.Location;
 import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
@@ -129,6 +130,12 @@ public class MapsActivity extends FragmentActivity
             displayMarker(markers);
 
         }
+    }
+
+    public void refresh(View view)
+    {
+        finish();
+        startActivity(getIntent().addFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION));
     }
 
     /**
