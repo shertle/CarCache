@@ -7,6 +7,7 @@ import android.view.View;
 import android.widget.Toast;
 import android.util.Log;
 import java.util.Date;
+import java.util.ArrayList;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
@@ -18,8 +19,6 @@ import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
-import com.google.android.gms.maps.CameraUpdateFactory;
-
 
 public class MapsActivity extends FragmentActivity
         implements
@@ -101,18 +100,18 @@ public class MapsActivity extends FragmentActivity
             Log.v("Location", msg1);
 
             Location loc1 = new Location(loc);
-            CCuser[] markers = new CCuser[2];
+            ArrayList<CCuser> markers = new ArrayList<>();
             loc1.setLatitude(loc.getLatitude()+10);
             loc1.setLongitude(loc.getLongitude() + 10);
-            markers[0] = new CCuser(new Date(),loc1);
+            markers.add(new CCuser(new Date(),loc1));
 
             Location loc2 = new Location(loc);
             loc2.setLatitude(loc.getLatitude()+20);
             loc2.setLongitude(loc.getLongitude() + 20);
-            markers[1] = new CCuser(new Date(),loc2);
+            markers.add(new CCuser(new Date(),loc2));
 
 
-            receiveMarker(markers);
+            displayMarker(markers);
 
         }
     }
@@ -121,7 +120,7 @@ public class MapsActivity extends FragmentActivity
      * Recieves array of markers of nearby CCusers and pin point the location of
      * such users on the map
      */
-    public void receiveMarker(CCuser[] markers)
+    public void displayMarker(ArrayList<CCuser> markers)
     {
         for(CCuser m : markers)
         {
@@ -130,6 +129,8 @@ public class MapsActivity extends FragmentActivity
                     .position(new LatLng(l.getLatitude(), l.getLongitude())));
         }
     }
+
+
 
 
     @Override
