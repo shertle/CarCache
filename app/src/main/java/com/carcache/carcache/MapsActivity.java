@@ -58,6 +58,7 @@ public class MapsActivity extends FragmentActivity
     public static final String CARCACHE_PREFS = "CarCachePrefs";
     public static final String PREFS_KEY_FIRSTLAUNCH = "FIRST_LAUNCH_KEY";
 
+
     private int timediff=5;
     private GoogleApiClient mGoogleApiClient;
     private GoogleMap mMap;
@@ -101,6 +102,8 @@ public class MapsActivity extends FragmentActivity
             Log.v(MAP_LOGGER, st);
         }
         */
+
+
 
         // On the first launch, ask the user for the bluetooth device
         if (firstLaunch) {
@@ -206,6 +209,7 @@ public class MapsActivity extends FragmentActivity
      */
     public void refresh(View view)
     {
+
         Date curTime = new Date();
         if(!allUsers.isEmpty())
         {
@@ -248,8 +252,7 @@ public class MapsActivity extends FragmentActivity
     {
         Date nowDate = new Date();
 
-        for(CCuser m : markers)
-        {
+        for(CCuser m : markers) {
             Location l = m.getLocation();
             Date date = m.getDate();
             long difference = nowDate.getTime() - date.getTime();
