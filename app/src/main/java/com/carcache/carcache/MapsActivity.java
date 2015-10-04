@@ -63,7 +63,6 @@ public class MapsActivity extends FragmentActivity
     private ArrayList<CCuser> allUsers;
     private ArrayList<Marker> allMarkers;
     private CCuser ccloc;
-    //private GoogleMap mMap;
 
     private static final LocationRequest REQUEST = LocationRequest.create()
             .setInterval(5000)          // 5 seconds
@@ -194,8 +193,9 @@ public class MapsActivity extends FragmentActivity
                 allUsers.remove(user);
             }
         }
-
-        //TODO request for new markers
+        WebServiceConnector connector = new WebServiceConnector();
+        ArrayList<CCuser> newUser = connector.findPoints(ccloc);
+        displayMarker(newUser);
     }
 
 
@@ -206,6 +206,8 @@ public class MapsActivity extends FragmentActivity
     {
         return (int)(d1.getTime()/1000-d2.getTime()/1000);
     }
+
+
     /**
      * Recieves array of markers of nearby CCusers and pin point the location of
      * such users on the map
@@ -230,8 +232,8 @@ public class MapsActivity extends FragmentActivity
         Toast.makeText(this, "MyLocation button clicked", Toast.LENGTH_SHORT).show();
         // Return false so that we don't consume the event and the default behavior still occurs
         WebServiceConnector connector = new WebServiceConnector();
-        connector.findPoints(ccloc);
-
+        ArrayList<CCuser> newUser = connector.findPoints(ccloc);
+        displayMarker(newUser);
         return false;
     }
 
