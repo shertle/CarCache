@@ -60,9 +60,9 @@ public class MapsActivity extends FragmentActivity
     private int timediff=5;
     private GoogleApiClient mGoogleApiClient;
     private GoogleMap mMap;
-    private ArrayList<CCuser> allUsers;
-    private ArrayList<Marker> allMarkers;
-    private CCuser ccloc;
+    private ArrayList<CCuser> allUsers = new ArrayList<>();
+    private ArrayList<Marker> allMarkers = new ArrayList<>();
+    private CCuser mainUser;
 
     private static final LocationRequest REQUEST = LocationRequest.create()
             .setInterval(5000)          // 5 seconds
@@ -127,13 +127,14 @@ public class MapsActivity extends FragmentActivity
 
         mMap = googleMap;
 
-
+        //obtain location of the user
         LocationManager locationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
         Location myLoc = locationManager.getLastKnownLocation(locationManager.getBestProvider(new Criteria(), true));
 
+        //move the camera to be on the user
         mMap.moveCamera(CameraUpdateFactory.newLatLng(new LatLng(myLoc.getLatitude(), myLoc.getLongitude())));
         mMap.animateCamera(CameraUpdateFactory.zoomTo(15));
-        mMap.addMarker(new MarkerOptions().position(new LatLng(myLoc.getLatitude(), myLoc.getLongitude())).title("You").icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_AZURE)));
+        mainUser = new CCuser(new Date(), myLoc);
         /*
         mMap.addMarker(new MarkerOptions().position(sydney).title("Marker in Sydney"));
         mMap.moveCamera(CameraUpdateFactory.newLatLng(sydney));
@@ -167,7 +168,7 @@ public class MapsActivity extends FragmentActivity
             Log.v("WebService Connect","Sending new location to web service.");
             WebServiceConnector connector = new WebServiceConnector();
             connector.sendLocation(test1);
-            ccloc = test1;
+            mainUser = test1;
 
         }
 
@@ -182,20 +183,27 @@ public class MapsActivity extends FragmentActivity
     public void refresh(View view)
     {
         Date curTime = new Date();
-        for(CCuser user:allUsers)
+        if(!allUsers.isEmpty())
         {
-            if(timeComp(curTime,user.getDate())<timediff)
+            for(CCuser user:allUsers)
             {
-                int position = allUsers.indexOf(user);
-                Marker m = allMarkers.get(position);
-                m.remove();
-                allMarkers.remove(m);
-                allUsers.remove(user);
+                if(timeComp(curTime,user.getDate())<timediff)
+                {
+                    int position = allUsers.indexOf(user);
+                    Marker m = allMarkers.get(position);
+                    m.remove();
+                    allMarkers.remove(m);
+                    allUsers.remove(user);
+                }
             }
         }
         WebServiceConnector connector = new WebServiceConnector();
-        ArrayList<CCuser> newUser = connector.findPoints(ccloc);
-        displayMarker(newUser);
+        ArrayList<CCuser> newUser = connector.findPoints(mainUser);
+        if(!newUser.isEmpty())
+        {
+            displayMarker(newUser);
+        }
+
     }
 
 
@@ -232,8 +240,11 @@ public class MapsActivity extends FragmentActivity
         Toast.makeText(this, "MyLocation button clicked", Toast.LENGTH_SHORT).show();
         // Return false so that we don't consume the event and the default behavior still occurs
         WebServiceConnector connector = new WebServiceConnector();
-        ArrayList<CCuser> newUser = connector.findPoints(ccloc);
-        displayMarker(newUser);
+        ArrayList<CCuser> newUser = connector.findPoints(mainUser);
+        if(!newUser.isEmpty())
+        {
+            displayMarker(newUser);
+        }
         return false;
     }
 
@@ -244,7 +255,7 @@ public class MapsActivity extends FragmentActivity
 
     @Override
     public void onConnected(Bundle connectionHint) {
-        LocationServices.FusedLocationApi.requestLocationUpdates (
+        LocationServices.FusedLocationApi.requestLocationUpdates(
                 mGoogleApiClient,
                 REQUEST,
                 this);
