@@ -1,47 +1,54 @@
 package com.carcache.carcache;
 
+/*
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentTransaction;
+import android.support.v4.app.FragmentManager;
+*/
 
 import android.app.FragmentManager;
 import android.app.Fragment;
+import android.app.FragmentManager;
 import android.app.FragmentTransaction;
-
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
-import android.content.Context;
 import android.content.Intent;
+import android.location.Criteria;
 import android.content.SharedPreferences;
 import android.location.Location;
-import android.support.v4.app.FragmentActivity;
+import android.location.LocationManager;
 import android.os.Bundle;
+import android.os.Handler;
+import android.preference.PreferenceManager;
+import android.support.v4.app.FragmentActivity;
+import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.Toast;
-import android.util.Log;
-import java.util.Date;
-import java.util.ArrayList;
-import android.location.Criteria;
-import android.location.LocationManager;
-import java.text.SimpleDateFormat;
 
-import com.carcache.carcache.Connectors.WebServiceConnector;
-import com.carcache.carcache.Models.CCuser;
+import com.carcache.carcache.connectors.WebServiceConnector;
+import com.carcache.carcache.models.CCuser;
+import com.carcache.carcache.services.BluetoothListenerService;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.LocationListener;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
-import com.google.android.gms.maps.model.MarkerOptions;
-import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.model.Marker;
+import com.google.android.gms.maps.model.MarkerOptions;
+import com.skyfishjy.library.RippleBackground;
 
-
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
 import java.util.Set;
 
 public class MapsActivity extends FragmentActivity
@@ -56,6 +63,10 @@ public class MapsActivity extends FragmentActivity
     public static final String MAP_LOGGER = "MAP_LOGGER";
     public static final String CARCACHE_PREFS = "CarCachePrefs";
     public static final String PREFS_KEY_FIRSTLAUNCH = "FIRST_LAUNCH_KEY";
+    public static final String LAT_KEY = "Latitude key";
+    public static final String LON_KEY = "Longitude key";
+
+    RippleBackground rippleBackground;
 
     private int timediff=5;
     private GoogleApiClient mGoogleApiClient;
@@ -85,11 +96,14 @@ public class MapsActivity extends FragmentActivity
                 .addOnConnectionFailedListener(this)
                 .build();
 
-        SharedPreferences settings = getPreferences(MODE_PRIVATE);
-        boolean firstLaunch = settings.getBoolean(PREFS_KEY_FIRSTLAUNCH, true);
+        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
+        boolean firstLaunch = preferences.getBoolean(PREFS_KEY_FIRSTLAUNCH, true);
 
         BluetoothAdapter mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
         Set<BluetoothDevice> pairedDevices = mBluetoothAdapter.getBondedDevices();
+
+        rippleBackground =(RippleBackground)findViewById(R.id.content);
+
 
         /*
         List<String> s = new ArrayList<String>();
@@ -101,6 +115,8 @@ public class MapsActivity extends FragmentActivity
         }
         */
 
+
+
         // On the first launch, ask the user for the bluetooth device
         if (firstLaunch) {
             FragmentManager fragmentManager = getFragmentManager();
@@ -110,6 +126,11 @@ public class MapsActivity extends FragmentActivity
             fragmentTransaction.replace(R.id.fragment_container, fragment);
             fragmentTransaction.commit();
         }
+        else {
+
+            startService(new Intent(this, BluetoothListenerService.class));
+        }
+
     }
 
 
@@ -128,6 +149,23 @@ public class MapsActivity extends FragmentActivity
 
         googleMap.setMyLocationEnabled(true);
         googleMap.setOnMyLocationButtonClickListener(this);
+
+        googleMap.setOnMapLongClickListener(new GoogleMap.OnMapLongClickListener() {
+            @Override
+            public void onMapLongClick(LatLng latLng) {
+
+                CCuser newUser = new CCuser();
+                Location newLocation = new Location("");
+                newLocation.setLatitude(latLng.latitude);
+                newLocation.setLongitude(latLng.longitude);
+
+                newUser.setLocation(newLocation);
+                newUser.setDate(new Date());
+
+                new WebServiceConnector().sendLocation(newUser);
+
+            }
+        });
 
 
         mMap = googleMap;
@@ -186,6 +224,16 @@ public class MapsActivity extends FragmentActivity
      */
     public void refresh(View view)
     {
+        rippleBackground.startRippleAnimation();
+        final Handler handler = new Handler();
+        handler.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                // Do something after 5s = 5000ms
+                rippleBackground.stopRippleAnimation();
+            }
+        }, 3000);
+
         Date curTime = new Date();
         if(!allUsers.isEmpty())
         {
@@ -201,11 +249,17 @@ public class MapsActivity extends FragmentActivity
                 }
             }
         }
+        LatLng newLatLng = mMap.getCameraPosition().target;
+        mainUser.getLocation().setLongitude(newLatLng.longitude);
+        mainUser.getLocation().setLatitude(newLatLng.latitude);
+
+
         WebServiceConnector connector = new WebServiceConnector();
         ArrayList<CCuser> newUser = connector.findPoints(mainUser);
         if(!newUser.isEmpty())
         {
             displayMarker(newUser);
+            displayParkedCar();
         }
 
     }
@@ -226,18 +280,34 @@ public class MapsActivity extends FragmentActivity
      */
     public void displayMarker(ArrayList<CCuser> markers)
     {
-        for(CCuser m : markers)
-        {
+        Date nowDate = new Date();
+
+        for(CCuser m : markers) {
             Location l = m.getLocation();
+            Date date = m.getDate();
+            long difference = nowDate.getTime() - date.getTime();
+
             Marker mark = mMap.addMarker(new MarkerOptions()
-                    .position(new LatLng(l.getLatitude(), l.getLongitude())));
+                    .position(new LatLng(l.getLatitude(), l.getLongitude()))
+                    .title(difference/1000/60 + " Mins Ago"));
             allUsers.add(m);
             allMarkers.add(mark);
         }
     }
 
 
+    public void displayParkedCar(){
+        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
+        float lat = preferences.getFloat(LAT_KEY,0);
+        float lon = preferences.getFloat(LON_KEY,0);
 
+        if(lat != 0 && lon != 0){
+            Marker mark = mMap.addMarker(new MarkerOptions()
+                            .position(new LatLng(lat, lon))
+                    );
+
+        }
+    }
 
     @Override
     public boolean onMyLocationButtonClick() {
