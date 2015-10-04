@@ -3,6 +3,8 @@ package com.carcache.carcache;
 import android.app.Activity;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
+import android.content.Context;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.app.Fragment;
 import android.util.Log;
@@ -15,7 +17,6 @@ import android.widget.ArrayAdapter;
 import android.widget.ListAdapter;
 import android.widget.TextView;
 
-import com.carcache.carcache.DeviceListItem;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -33,17 +34,7 @@ import java.util.Set;
 public class BluetoothDeviceListFragment extends Fragment implements AbsListView.OnItemClickListener {
 
     public static final String BLUETOOTH_LOGGER = "BLUETOOTH_LOGGER";
-
-    /*
-    // TODO: Rename parameter arguments, choose names that match
-    // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-    private static final String ARG_PARAM1 = "param1";
-    private static final String ARG_PARAM2 = "param2";
-
-    // TODO: Rename and change types of parameters
-    private String mParam1;
-    private String mParam2;
-    */
+    public static final String PREFS_KEY_SAVEDDEVICE = "CarCache Saved Device";
 
     private List<DeviceListItem> mDeviceList;
 
@@ -64,8 +55,6 @@ public class BluetoothDeviceListFragment extends Fragment implements AbsListView
     public static BluetoothDeviceListFragment newInstance(String param1, String param2) {
         BluetoothDeviceListFragment fragment = new BluetoothDeviceListFragment();
         Bundle args = new Bundle();
-        //args.putString(ARG_PARAM1, param1);
-        //args.putString(ARG_PARAM2, param2);
         fragment.setArguments(args);
         return fragment;
     }
@@ -80,13 +69,6 @@ public class BluetoothDeviceListFragment extends Fragment implements AbsListView
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
-        /*
-        if (getArguments() != null) {
-            mParam1 = getArguments().getString(ARG_PARAM1);
-            mParam2 = getArguments().getString(ARG_PARAM2);
-        }
-        */
 
         BluetoothAdapter mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
         Set<BluetoothDevice> pairedDevices = mBluetoothAdapter.getBondedDevices();
@@ -112,7 +94,6 @@ public class BluetoothDeviceListFragment extends Fragment implements AbsListView
         // TODO: Change Adapter to display your content
         mAdapter = new ArrayAdapter<DeviceListItem>(getActivity(),
                 android.R.layout.simple_list_item_1, android.R.id.text1, mDeviceList);
-
 
     }
 
@@ -153,6 +134,10 @@ public class BluetoothDeviceListFragment extends Fragment implements AbsListView
         BluetoothDevice bd = mDeviceList.get(position).getDevice();
         Log.v(BLUETOOTH_LOGGER, "The device is: " + bd.getName());
 
+        saveDevice(bd);
+        Fragment toRemove = this;
+        this.getActivity().getFragmentManager().beginTransaction().remove(toRemove).commit();
+
         /*
         if (null != mListener) {
             // Notify the active callbacks interface (the activity, if the
@@ -160,6 +145,18 @@ public class BluetoothDeviceListFragment extends Fragment implements AbsListView
             mListener.onFragmentInteraction(s.get(position).id);
         }
         */
+    }
+
+    /**
+     * Save the hashcode of the device for later
+     * @param bd the BluetoothDevice to save
+     */
+    public void saveDevice(BluetoothDevice bd) {
+        SharedPreferences settings = this.getActivity().getPreferences(Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = settings.edit();
+        editor.putInt(PREFS_KEY_SAVEDDEVICE, bd.hashCode());
+        editor.putBoolean(MapsActivity.PREFS_KEY_FIRSTLAUNCH, false);
+        editor.commit();
     }
 
     /**

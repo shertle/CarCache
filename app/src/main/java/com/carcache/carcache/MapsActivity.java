@@ -1,10 +1,6 @@
 package com.carcache.carcache;
 
-/*
-import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentTransaction;
-import android.support.v4.app.FragmentManager;
-*/
+
 import android.app.FragmentManager;
 import android.app.Fragment;
 import android.app.FragmentTransaction;
@@ -13,6 +9,7 @@ import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.location.Location;
 import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
@@ -43,8 +40,7 @@ import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.model.Marker;
 
-import java.util.ArrayList;
-import java.util.List;
+
 import java.util.Set;
 
 public class MapsActivity extends FragmentActivity
@@ -57,6 +53,9 @@ public class MapsActivity extends FragmentActivity
         BluetoothDeviceListFragment.OnFragmentInteractionListener {
 
     public static final String MAP_LOGGER = "MAP_LOGGER";
+    public static final String CARCACHE_PREFS = "CarCachePrefs";
+    public static final String PREFS_KEY_FIRSTLAUNCH = "FIRST_LAUNCH_KEY";
+
     private int timediff=5;
     private GoogleApiClient mGoogleApiClient;
     private GoogleMap mMap;
@@ -84,28 +83,31 @@ public class MapsActivity extends FragmentActivity
                 .addOnConnectionFailedListener(this)
                 .build();
 
+        SharedPreferences settings = getPreferences(MODE_PRIVATE);
+        boolean firstLaunch = settings.getBoolean(PREFS_KEY_FIRSTLAUNCH, true);
 
         BluetoothAdapter mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
         Set<BluetoothDevice> pairedDevices = mBluetoothAdapter.getBondedDevices();
 
+        /*
         List<String> s = new ArrayList<String>();
         for (BluetoothDevice bt : pairedDevices) {
             s.add(bt.getName());
         }
-
         for (String st : s) {
             Log.v(MAP_LOGGER, st);
         }
+        */
 
-        FragmentManager fragmentManager = getFragmentManager();
-        FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+        // On the first launch, ask the user for the bluetooth device
+        if (firstLaunch) {
+            FragmentManager fragmentManager = getFragmentManager();
+            FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
 
-        Fragment fragment = new BluetoothDeviceListFragment();
-        fragmentTransaction.replace(R.id.fragment_container, fragment);
-        fragmentTransaction.commit();
-
-        //setListAdapter(new ArrayAdapter<String>(this, R.layout.list, s));
-
+            Fragment fragment = new BluetoothDeviceListFragment();
+            fragmentTransaction.replace(R.id.fragment_container, fragment);
+            fragmentTransaction.commit();
+        }
     }
 
 
@@ -133,10 +135,7 @@ public class MapsActivity extends FragmentActivity
         mMap.moveCamera(CameraUpdateFactory.newLatLng(new LatLng(myLoc.getLatitude(), myLoc.getLongitude())));
         mMap.animateCamera(CameraUpdateFactory.zoomTo(15));
         mMap.addMarker(new MarkerOptions().position(new LatLng(myLoc.getLatitude(), myLoc.getLongitude())).title("You").icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_AZURE)));
-        /*
-        mMap.addMarker(new MarkerOptions().position(sydney).title("Marker in Sydney"));
-        mMap.moveCamera(CameraUpdateFactory.newLatLng(sydney));
-        */
+
     }
 
     /**
@@ -168,8 +167,6 @@ public class MapsActivity extends FragmentActivity
             connector.sendLocation(test1);
 
         }
-
-
 
     }
 
@@ -262,6 +259,15 @@ public class MapsActivity extends FragmentActivity
     public void onPause() {
         super.onPause();
         mGoogleApiClient.disconnect();
+    }
+
+    /**
+     * Wrapper method to retrieve the correct paired device
+     * @return the hashcode of the device or 0 if there is no such device
+     */
+    public int getDeviceHashCode() {
+        SharedPreferences settings = getPreferences(MODE_PRIVATE);
+        return settings.getInt(BluetoothDeviceListFragment.PREFS_KEY_SAVEDDEVICE, 0);
     }
 
     public void onFragmentInteraction(String id) {
