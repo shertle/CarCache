@@ -16,6 +16,7 @@ import android.os.Bundle;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
 import android.widget.Toast;
 import android.util.Log;
 import java.util.Date;
@@ -123,6 +124,8 @@ public class MapsActivity extends FragmentActivity
     @Override
     public void onMapReady(GoogleMap googleMap) {
 
+
+
         googleMap.setMyLocationEnabled(true);
         googleMap.setOnMyLocationButtonClickListener(this);
 
@@ -147,7 +150,7 @@ public class MapsActivity extends FragmentActivity
     /**
      * Button to get current Location. This demonstrates how to get the current Location as required
      * without needing to register a LocationListener
-     */
+     *
     public void showMyLocation(View view) {
         Log.v(MAP_LOGGER, "is connected: " + mGoogleApiClient.isConnected());
         if (mGoogleApiClient.isConnected()) {
@@ -175,7 +178,7 @@ public class MapsActivity extends FragmentActivity
 
         }
 
-    }
+    }*/
 
 
     /**
@@ -239,13 +242,6 @@ public class MapsActivity extends FragmentActivity
     @Override
     public boolean onMyLocationButtonClick() {
         Toast.makeText(this, "MyLocation button clicked", Toast.LENGTH_SHORT).show();
-        // Return false so that we don't consume the event and the default behavior still occurs
-        WebServiceConnector connector = new WebServiceConnector();
-        ArrayList<CCuser> newUser = connector.findPoints(mainUser);
-        if(!newUser.isEmpty())
-        {
-            displayMarker(newUser);
-        }
         return false;
     }
 
