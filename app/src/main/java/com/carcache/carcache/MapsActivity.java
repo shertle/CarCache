@@ -290,14 +290,6 @@ public class MapsActivity extends FragmentActivity
         mGoogleApiClient.disconnect();
     }
 
-    /**
-     * Wrapper method to retrieve the correct paired device
-     * @return the hashcode of the device or 0 if there is no such device
-     */
-    public int getDeviceHashCode() {
-        SharedPreferences settings = getPreferences(MODE_PRIVATE);
-        return settings.getInt(BluetoothDeviceListFragment.PREFS_KEY_SAVEDDEVICE, 0);
-    }
 
     public void onFragmentInteraction(String id) {
         // Do nothing
