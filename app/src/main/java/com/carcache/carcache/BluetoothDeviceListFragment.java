@@ -3,6 +3,8 @@ package com.carcache.carcache;
 import android.app.Activity;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
+import android.content.Context;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.app.Fragment;
 import android.util.Log;
@@ -33,6 +35,7 @@ import java.util.Set;
 public class BluetoothDeviceListFragment extends Fragment implements AbsListView.OnItemClickListener {
 
     public static final String BLUETOOTH_LOGGER = "BLUETOOTH_LOGGER";
+    public static final String PREFS_KEY_SAVEDDEVICE = "CarCache Saved Device";
 
     /*
     // TODO: Rename parameter arguments, choose names that match
@@ -113,7 +116,6 @@ public class BluetoothDeviceListFragment extends Fragment implements AbsListView
         mAdapter = new ArrayAdapter<DeviceListItem>(getActivity(),
                 android.R.layout.simple_list_item_1, android.R.id.text1, mDeviceList);
 
-
     }
 
     @Override
@@ -153,6 +155,10 @@ public class BluetoothDeviceListFragment extends Fragment implements AbsListView
         BluetoothDevice bd = mDeviceList.get(position).getDevice();
         Log.v(BLUETOOTH_LOGGER, "The device is: " + bd.getName());
 
+        saveDevice(bd);
+        Fragment toRemove = this;
+        this.getActivity().getFragmentManager().beginTransaction().remove(toRemove).commit();
+
         /*
         if (null != mListener) {
             // Notify the active callbacks interface (the activity, if the
@@ -160,6 +166,18 @@ public class BluetoothDeviceListFragment extends Fragment implements AbsListView
             mListener.onFragmentInteraction(s.get(position).id);
         }
         */
+    }
+
+    /**
+     * Save the hashcode of the device for later
+     * @param bd the BluetoothDevice to save
+     */
+    public void saveDevice(BluetoothDevice bd) {
+        SharedPreferences settings = this.getActivity().getPreferences(Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = settings.edit();
+        editor.putInt(PREFS_KEY_SAVEDDEVICE, bd.hashCode());
+        editor.putBoolean(MapsActivity.PREFS_KEY_FIRSTLAUNCH, false);
+        editor.commit();
     }
 
     /**
