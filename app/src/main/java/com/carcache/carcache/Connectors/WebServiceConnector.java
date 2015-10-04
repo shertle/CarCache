@@ -151,7 +151,7 @@ public class WebServiceConnector {
                 urlBuilder.append(location.getLocation().getLongitude());
                 urlBuilder.append("&");
                 urlBuilder.append(radGetKey);
-                urlBuilder.append(25); //default of 25km
+                urlBuilder.append(10); //default of 25km
 
                 url = new URL(urlBuilder.toString());
                 HttpURLConnection connection = (HttpURLConnection) url.openConnection();

@@ -14,6 +14,7 @@ import android.view.ViewGroup;
 import android.widget.AbsListView;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
 import android.widget.ListAdapter;
 import android.widget.TextView;
 
@@ -35,6 +36,8 @@ public class BluetoothDeviceListFragment extends Fragment implements AbsListView
 
     public static final String BLUETOOTH_LOGGER = "BLUETOOTH_LOGGER";
     public static final String PREFS_KEY_SAVEDDEVICE = "CarCache Saved Device";
+
+    private Button mRefreshButton;
 
     private List<DeviceListItem> mDeviceList;
 
@@ -72,6 +75,9 @@ public class BluetoothDeviceListFragment extends Fragment implements AbsListView
 
         BluetoothAdapter mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
         Set<BluetoothDevice> pairedDevices = mBluetoothAdapter.getBondedDevices();
+
+        mRefreshButton = (Button) this.getActivity().findViewById(R.id.refreshButton);
+        mRefreshButton.setVisibility(View.INVISIBLE);
 
         /*
         List<String> s = new ArrayList<String>();
@@ -135,6 +141,8 @@ public class BluetoothDeviceListFragment extends Fragment implements AbsListView
         Log.v(BLUETOOTH_LOGGER, "The device is: " + bd.getName());
 
         saveDevice(bd);
+        mRefreshButton.setVisibility(View.VISIBLE);
+
         Fragment toRemove = this;
         this.getActivity().getFragmentManager().beginTransaction().remove(toRemove).commit();
 
