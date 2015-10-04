@@ -10,6 +10,10 @@ public class CCuser {
     private Date curTime;
     private Location curLoc;
 
+    public CCuser(){
+
+    }
+
     /*
     Construct a new CCuser object that contains the date and location
      */

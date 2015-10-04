@@ -36,6 +36,7 @@ public class MapsActivity extends FragmentActivity
 
     public static final String MAP_LOGGER = "MAP_LOGGER";
     private GoogleApiClient mGoogleApiClient;
+    private CCuser ccloc;
     //private GoogleMap mMap;
 
     private static final LocationRequest REQUEST = LocationRequest.create()
@@ -120,6 +121,7 @@ public class MapsActivity extends FragmentActivity
             Log.v("WebService Connect","Sending new location to web service.");
             WebServiceConnector connector = new WebServiceConnector();
             connector.sendLocation(test1);
+            ccloc = test1;
         }
     }
 
@@ -129,6 +131,9 @@ public class MapsActivity extends FragmentActivity
     public boolean onMyLocationButtonClick() {
         Toast.makeText(this, "MyLocation button clicked", Toast.LENGTH_SHORT).show();
         // Return false so that we don't consume the event and the default behavior still occurs
+        WebServiceConnector connector = new WebServiceConnector();
+        connector.findPoints(ccloc);
+
         return false;
     }
 
