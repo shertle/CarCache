@@ -101,15 +101,15 @@ public class BluetoothListenerService extends Service
             if (BluetoothDevice.ACTION_FOUND.equals(action)) {
                 //Device found
                 Log.v(TAG, "ACTION_FOUND");
-                showSuccessfulBroadcast("ACTION_FOUND");
+                //showSuccessfulBroadcast("ACTION_FOUND");
             }
             else if (BluetoothDevice.ACTION_ACL_CONNECTED.equals(action)) {
                 //Device is now connected
                 Log.v(TAG, "ACTION_ACL_CONNECTED");
-                showSuccessfulBroadcast("ACTION_ACL_CONNECTED");
+                //showSuccessfulBroadcast("ACTION_ACL_CONNECTED");
 
-                showSuccessfulBroadcast("Saved = " + macAddress);
-                showSuccessfulBroadcast("New = " + device.getAddress());
+                //showSuccessfulBroadcast("Saved = " + macAddress);
+                //showSuccessfulBroadcast("New = " + device.getAddress());
                 Log.e(TAG,"Saved = " + macAddress);
                 Log.e(TAG,"New = " + device.getAddress());
 
@@ -132,18 +132,18 @@ public class BluetoothListenerService extends Service
             } else if (BluetoothAdapter.ACTION_DISCOVERY_FINISHED.equals(action)) {
                 //Done searching
                 Log.v(TAG, "ACTION_DISCOVERY_FINISHED");
-                showSuccessfulBroadcast("ACTION_DISCOVERY_FINISHED");
+                //showSuccessfulBroadcast("ACTION_DISCOVERY_FINISHED");
             }
             else if (BluetoothDevice.ACTION_ACL_DISCONNECT_REQUESTED.equals(action)) {
                 //Device is about to disconnect
-                Log.v(TAG, "ACTION_ACL_DISCONNECT_REQUESTED" );
-                showSuccessfulBroadcast("ACTION_ACL_DISCONNECT_REQUESTED");
+                Log.v(TAG, "ACTION_ACL_DISCONNECT_REQUESTED");
+                //showSuccessfulBroadcast("ACTION_ACL_DISCONNECT_REQUESTED");
             }
             else if (BluetoothDevice.ACTION_ACL_DISCONNECTED.equals(action)) {
                 //Device has disconnected
-                Log.v(TAG, "ACTION_ACL_DISCONNECTED" );
-                showSuccessfulBroadcast("ACTION_ACL_DISCONNECTED");
-                /*if(macAddress.equals( device.getAddress())){
+                Log.v(TAG, "ACTION_ACL_DISCONNECTED");
+                //showSuccessfulBroadcast("ACTION_ACL_DISCONNECTED");
+                if(macAddress.equals( device.getAddress())){
                     Log.v(TAG, "Disconnected to device with matching mac address: " + macAddress);
 
                     intention = Intention.INTENTION_DISCONNECT;
@@ -154,8 +154,8 @@ public class BluetoothListenerService extends Service
                             .addOnConnectionFailedListener(BluetoothListenerService.this)
                             .build();
 
-                    //mGoogleApiClient.connect();
-                }*/
+                    mGoogleApiClient.connect();
+                }
 
             }
         }
@@ -187,6 +187,7 @@ public class BluetoothListenerService extends Service
             new WebServiceConnector().sendLocation(toSend);
         }
         else{
+            Log.v(TAG,"Intent disconnect");
 
             SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
             SharedPreferences.Editor editor = preferences.edit();

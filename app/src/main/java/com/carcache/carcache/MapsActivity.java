@@ -251,6 +251,7 @@ public class MapsActivity extends FragmentActivity
             }
         }*/
         mMap.clear();
+
         LatLng newLatLng = mMap.getCameraPosition().target;
         mainUser.getLocation().setLongitude(newLatLng.longitude);
         mainUser.getLocation().setLatitude(newLatLng.latitude);
@@ -288,27 +289,35 @@ public class MapsActivity extends FragmentActivity
             Location l = m.getLocation();
             Date date = m.getDate();
             long difference = nowDate.getTime() - date.getTime();
+            long minDiff = (nowDate.getTime() - date.getTime())/1000/60;
+
 
             mMap.addMarker(new MarkerOptions()
                     .position(new LatLng(l.getLatitude(), l.getLongitude()))
-                    .title(difference/1000/60 + " Mins Ago"));
-            /*
-            allUsers.add(m);
-            allMarkers.add(mark);
-            */
+                    .title(difference / 1000 / 60 + " Mins Ago")
+                    .alpha(1 - (((float) minDiff / 10) * 1.0f)));
+
         }
     }
 
 
     public void displayParkedCar(){
+
+        Log.v("Display Parked Car:", "");
+
         SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
         float lat = preferences.getFloat(LAT_KEY,0);
         float lon = preferences.getFloat(LON_KEY,0);
 
+        Log.v("lat",lat+"");
+        Log.v("lon",lon+"");
+
         if(lat != 0 && lon != 0){
             Marker mark = mMap.addMarker(new MarkerOptions()
                             .position(new LatLng(lat, lon))
-                    );
+                            .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_CYAN))
+                            .title("Your Car")
+            );
 
         }
     }
