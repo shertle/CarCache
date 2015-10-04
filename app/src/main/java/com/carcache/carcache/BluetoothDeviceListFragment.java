@@ -157,6 +157,8 @@ public class BluetoothDeviceListFragment extends Fragment implements AbsListView
         editor.putInt(PREFS_KEY_SAVEDDEVICE, bd.hashCode());
         editor.putBoolean(MapsActivity.PREFS_KEY_FIRSTLAUNCH, false);
         editor.commit();
+
+        DeviceCodeWrapper.getInstance().setDeviceCode(bd.hashCode());
     }
 
     /**
