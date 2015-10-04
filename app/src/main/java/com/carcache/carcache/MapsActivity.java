@@ -25,6 +25,7 @@ import java.util.Date;
 import java.util.ArrayList;
 import android.location.Criteria;
 import android.location.LocationManager;
+import java.text.SimpleDateFormat;
 
 import com.carcache.carcache.Connectors.WebServiceConnector;
 import com.carcache.carcache.Models.CCuser;
@@ -40,6 +41,7 @@ import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.CameraUpdateFactory;
+import com.google.android.gms.maps.model.Marker;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -55,8 +57,11 @@ public class MapsActivity extends FragmentActivity
         BluetoothDeviceListFragment.OnFragmentInteractionListener {
 
     public static final String MAP_LOGGER = "MAP_LOGGER";
+    private int timediff=5;
     private GoogleApiClient mGoogleApiClient;
     private GoogleMap mMap;
+    private ArrayList<CCuser> allUsers;
+    private ArrayList<Marker> allMarkers;
 
     private static final LocationRequest REQUEST = LocationRequest.create()
             .setInterval(5000)          // 5 seconds
@@ -162,33 +167,42 @@ public class MapsActivity extends FragmentActivity
             WebServiceConnector connector = new WebServiceConnector();
             connector.sendLocation(test1);
 
-
-            Location loc1 = new Location(loc);
-            ArrayList<CCuser> markers = new ArrayList<>();
-            loc1.setLatitude(loc.getLatitude() + 10);
-            loc1.setLongitude(loc.getLongitude() + 10);
-            markers.add(new CCuser(new Date(), loc1));
-
-            Location loc2 = new Location(loc);
-            loc2.setLatitude(loc.getLatitude() + 20);
-            loc2.setLongitude(loc.getLongitude() + 20);
-            markers.add(new CCuser(new Date(),loc2));
-
-
-            displayMarker(markers);
-
         }
 
 
 
     }
 
+
+    /**
+     * delete old markers, request for new markers
+     */
     public void refresh(View view)
     {
-        finish();
-        startActivity(getIntent().addFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION));
+        Date curTime = new Date();
+        for(CCuser user:allUsers)
+        {
+            if(timeComp(curTime,user.getDate())<timediff)
+            {
+                int position = allUsers.indexOf(user);
+                Marker m = allMarkers.get(position);
+                m.remove();
+                allMarkers.remove(m);
+                allUsers.remove(user);
+            }
+        }
+
+        //TODO request for new markers
     }
 
+
+    /*
+    helper method to find difference in seconds of the two times
+     */
+    private int timeComp(Date d1, Date d2)
+    {
+        return (int)(d1.getTime()/1000-d2.getTime()/1000);
+    }
     /**
      * Recieves array of markers of nearby CCusers and pin point the location of
      * such users on the map
@@ -198,8 +212,10 @@ public class MapsActivity extends FragmentActivity
         for(CCuser m : markers)
         {
             Location l = m.getLocation();
-            mMap.addMarker(new MarkerOptions()
+            Marker mark = mMap.addMarker(new MarkerOptions()
                     .position(new LatLng(l.getLatitude(), l.getLongitude())));
+            allUsers.add(m);
+            allMarkers.add(mark);
         }
     }
 
