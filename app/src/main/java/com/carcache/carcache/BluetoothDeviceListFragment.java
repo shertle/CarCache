@@ -16,6 +16,7 @@ import android.widget.ListAdapter;
 import android.widget.TextView;
 
 import com.carcache.carcache.dummy.DummyContent;
+import com.carcache.carcache.DeviceListItem;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -33,6 +34,8 @@ import java.util.Set;
 public class BluetoothDeviceListFragment extends Fragment implements AbsListView.OnItemClickListener {
 
     public static final String BLUETOOTH_LOGGER = "BLUETOOTH_LOGGER";
+
+    /*
     // TODO: Rename parameter arguments, choose names that match
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
     private static final String ARG_PARAM1 = "param1";
@@ -41,6 +44,9 @@ public class BluetoothDeviceListFragment extends Fragment implements AbsListView
     // TODO: Rename and change types of parameters
     private String mParam1;
     private String mParam2;
+    */
+
+    private List<DeviceListItem> mDeviceList;
 
     private OnFragmentInteractionListener mListener;
 
@@ -59,8 +65,8 @@ public class BluetoothDeviceListFragment extends Fragment implements AbsListView
     public static BluetoothDeviceListFragment newInstance(String param1, String param2) {
         BluetoothDeviceListFragment fragment = new BluetoothDeviceListFragment();
         Bundle args = new Bundle();
-        args.putString(ARG_PARAM1, param1);
-        args.putString(ARG_PARAM2, param2);
+        //args.putString(ARG_PARAM1, param1);
+        //args.putString(ARG_PARAM2, param2);
         fragment.setArguments(args);
         return fragment;
     }
@@ -76,14 +82,17 @@ public class BluetoothDeviceListFragment extends Fragment implements AbsListView
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+        /*
         if (getArguments() != null) {
             mParam1 = getArguments().getString(ARG_PARAM1);
             mParam2 = getArguments().getString(ARG_PARAM2);
         }
+        */
 
         BluetoothAdapter mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
         Set<BluetoothDevice> pairedDevices = mBluetoothAdapter.getBondedDevices();
 
+        /*
         List<String> s = new ArrayList<String>();
         for (BluetoothDevice bt : pairedDevices) {
             s.add(bt.getName());
@@ -92,10 +101,20 @@ public class BluetoothDeviceListFragment extends Fragment implements AbsListView
         for (String st : s) {
             Log.v(BLUETOOTH_LOGGER, st);
         }
+        */
+
+        mDeviceList = new ArrayList<DeviceListItem>();
+        for (BluetoothDevice bt : pairedDevices) {
+            mDeviceList.add(new DeviceListItem(bt));
+        }
+
+
 
         // TODO: Change Adapter to display your content
-        mAdapter = new ArrayAdapter<String>(getActivity(),
-                android.R.layout.simple_list_item_1, android.R.id.text1, s);
+        mAdapter = new ArrayAdapter<DeviceListItem>(getActivity(),
+                android.R.layout.simple_list_item_1, android.R.id.text1, mDeviceList);
+
+
     }
 
     @Override
@@ -132,6 +151,9 @@ public class BluetoothDeviceListFragment extends Fragment implements AbsListView
 
     @Override
     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+        BluetoothDevice bd = mDeviceList.get(position).getDevice();
+        Log.v(BLUETOOTH_LOGGER, "The device is: " + bd.getName());
+
         /*
         if (null != mListener) {
             // Notify the active callbacks interface (the activity, if the
