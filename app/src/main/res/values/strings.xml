@@ -2,4 +2,5 @@
     <string name="app_name">CarCache</string>
     <string name="title_activity_maps">Map</string>
     <string name="my_location">My Location</string>
+    <string name="select_car">Please select your car from the following list of devices.</string>
 </resources>
