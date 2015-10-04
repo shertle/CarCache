@@ -7,7 +7,9 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.SharedPreferences;
 import android.os.IBinder;
+import android.preference.PreferenceManager;
 import android.support.annotation.Nullable;
 import android.util.Log;
 import android.widget.Toast;
@@ -18,7 +20,8 @@ import android.widget.Toast;
 public class BluetoothListenerService extends Service {
 
     private static String TAG = "Bluetooth Change Handler";
-
+    private String macAddress = "";
+    public static final String PREFS_KEY_SAVEDDEVICE = "CarCache Saved Device";
 
     @Nullable
     @Override
@@ -40,7 +43,8 @@ public class BluetoothListenerService extends Service {
         this.registerReceiver(mReceiver, filter2);
         this.registerReceiver(mReceiver, filter3);
 
-
+        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
+        macAddress = preferences.getString(PREFS_KEY_SAVEDDEVICE,"");
     }
 
     @Override
@@ -76,10 +80,14 @@ public class BluetoothListenerService extends Service {
             }
             else if (BluetoothDevice.ACTION_ACL_CONNECTED.equals(action)) {
                 //Device is now connected
-                Log.v(TAG, "ACTION_ACL_CONNECTED" );
+                Log.v(TAG, "ACTION_ACL_CONNECTED");
                 showSuccessfulBroadcast("ACTION_ACL_CONNECTED");
-            }
-            else if (BluetoothAdapter.ACTION_DISCOVERY_FINISHED.equals(action)) {
+
+                if(macAddress == device.getAddress()){
+                    Log.v(TAG, "Connected to device with matching mac address: " + macAddress);
+                }
+
+            } else if (BluetoothAdapter.ACTION_DISCOVERY_FINISHED.equals(action)) {
                 //Done searching
                 Log.v(TAG, "ACTION_DISCOVERY_FINISHED");
                 showSuccessfulBroadcast("ACTION_DISCOVERY_FINISHED");
@@ -93,6 +101,10 @@ public class BluetoothListenerService extends Service {
                 //Device has disconnected
                 Log.v(TAG, "ACTION_ACL_DISCONNECTED" );
                 showSuccessfulBroadcast("ACTION_ACL_DISCONNECTED");
+                if(macAddress == device.getAddress()){
+                    Log.v(TAG, "Disconnected to device with matching mac address: " + macAddress);
+                }
+
             }
         }
     };

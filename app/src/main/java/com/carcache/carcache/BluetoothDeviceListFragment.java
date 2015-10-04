@@ -154,7 +154,7 @@ public class BluetoothDeviceListFragment extends Fragment implements AbsListView
     public void saveDevice(BluetoothDevice bd) {
         SharedPreferences settings = this.getActivity().getPreferences(Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = settings.edit();
-        editor.putInt(PREFS_KEY_SAVEDDEVICE, bd.hashCode());
+        editor.putString(PREFS_KEY_SAVEDDEVICE, bd.getAddress());
         editor.putBoolean(MapsActivity.PREFS_KEY_FIRSTLAUNCH, false);
         editor.commit();
     }

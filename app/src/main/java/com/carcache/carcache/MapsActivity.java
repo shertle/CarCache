@@ -89,8 +89,6 @@ public class MapsActivity extends FragmentActivity
         SharedPreferences settings = getPreferences(MODE_PRIVATE);
         boolean firstLaunch = settings.getBoolean(PREFS_KEY_FIRSTLAUNCH, true);
 
-        startService(new Intent(this, BluetoothListenerService.class));
-
         BluetoothAdapter mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
         Set<BluetoothDevice> pairedDevices = mBluetoothAdapter.getBondedDevices();
 
@@ -112,6 +110,10 @@ public class MapsActivity extends FragmentActivity
             Fragment fragment = new BluetoothDeviceListFragment();
             fragmentTransaction.replace(R.id.fragment_container, fragment);
             fragmentTransaction.commit();
+        }
+        else{
+            startService(new Intent(this, BluetoothListenerService.class));
+
         }
     }
 
