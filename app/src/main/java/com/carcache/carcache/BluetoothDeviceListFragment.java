@@ -15,7 +15,6 @@ import android.widget.ArrayAdapter;
 import android.widget.ListAdapter;
 import android.widget.TextView;
 
-import com.carcache.carcache.dummy.DummyContent;
 import com.carcache.carcache.DeviceListItem;
 
 import java.util.ArrayList;
