@@ -1,4 +1,4 @@
-package com.carcache.carcache.Models;
+package com.carcache.carcache.models;
 
 import java.util.Date;
 import android.location.Location;
