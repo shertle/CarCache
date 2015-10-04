@@ -129,7 +129,7 @@ public class WebServiceConnector {
         protected ArrayList<CCuser> doInBackground(CCuser... params) {
 
             URL url = null;
-            ArrayList<CCuser> resultsArray = null;
+            ArrayList<CCuser> resultsArray = new ArrayList<>();
 
             try {
 

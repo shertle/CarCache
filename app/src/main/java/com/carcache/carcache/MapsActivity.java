@@ -5,6 +5,8 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v4.app.FragmentManager;
 */
+
+import android.app.FragmentManager;
 import android.app.Fragment;
 import android.app.FragmentManager;
 import android.app.FragmentTransaction;
@@ -12,6 +14,7 @@ import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.content.Intent;
 import android.location.Criteria;
+import android.content.SharedPreferences;
 import android.location.Location;
 import android.location.LocationManager;
 import android.os.Bundle;
@@ -52,13 +55,15 @@ public class MapsActivity extends FragmentActivity
         BluetoothDeviceListFragment.OnFragmentInteractionListener {
 
     public static final String MAP_LOGGER = "MAP_LOGGER";
+    public static final String CARCACHE_PREFS = "CarCachePrefs";
+    public static final String PREFS_KEY_FIRSTLAUNCH = "FIRST_LAUNCH_KEY";
+
     private int timediff=5;
     private GoogleApiClient mGoogleApiClient;
     private GoogleMap mMap;
-    private ArrayList<CCuser> allUsers;
-    private ArrayList<Marker> allMarkers;
-    private CCuser ccloc;
-    //private GoogleMap mMap;
+    private ArrayList<CCuser> allUsers = new ArrayList<>();
+    private ArrayList<Marker> allMarkers = new ArrayList<>();
+    private CCuser mainUser;
 
     private static final LocationRequest REQUEST = LocationRequest.create()
             .setInterval(5000)          // 5 seconds
@@ -81,30 +86,33 @@ public class MapsActivity extends FragmentActivity
                 .addOnConnectionFailedListener(this)
                 .build();
 
+        SharedPreferences settings = getPreferences(MODE_PRIVATE);
+        boolean firstLaunch = settings.getBoolean(PREFS_KEY_FIRSTLAUNCH, true);
 
         startService(new Intent(this, BluetoothListenerService.class));
 
         BluetoothAdapter mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
         Set<BluetoothDevice> pairedDevices = mBluetoothAdapter.getBondedDevices();
 
+        /*
         List<String> s = new ArrayList<String>();
         for (BluetoothDevice bt : pairedDevices) {
             s.add(bt.getName());
         }
-
         for (String st : s) {
             Log.v(MAP_LOGGER, st);
         }
+        */
 
-        FragmentManager fragmentManager = getFragmentManager();
-        FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+        // On the first launch, ask the user for the bluetooth device
+        if (firstLaunch) {
+            FragmentManager fragmentManager = getFragmentManager();
+            FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
 
-        Fragment fragment = new BluetoothDeviceListFragment();
-        fragmentTransaction.replace(R.id.fragment_container, fragment);
-        fragmentTransaction.commit();
-
-        //setListAdapter(new ArrayAdapter<String>(this, R.layout.list, s));
-
+            Fragment fragment = new BluetoothDeviceListFragment();
+            fragmentTransaction.replace(R.id.fragment_container, fragment);
+            fragmentTransaction.commit();
+        }
     }
 
 
@@ -125,17 +133,19 @@ public class MapsActivity extends FragmentActivity
 
         mMap = googleMap;
 
-
+        //obtain location of the user
         LocationManager locationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
         Location myLoc = locationManager.getLastKnownLocation(locationManager.getBestProvider(new Criteria(), true));
 
+        //move the camera to be on the user
         mMap.moveCamera(CameraUpdateFactory.newLatLng(new LatLng(myLoc.getLatitude(), myLoc.getLongitude())));
         mMap.animateCamera(CameraUpdateFactory.zoomTo(15));
-        mMap.addMarker(new MarkerOptions().position(new LatLng(myLoc.getLatitude(), myLoc.getLongitude())).title("You").icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_AZURE)));
+        mainUser = new CCuser(new Date(), myLoc);
         /*
         mMap.addMarker(new MarkerOptions().position(sydney).title("Marker in Sydney"));
         mMap.moveCamera(CameraUpdateFactory.newLatLng(sydney));
         */
+
     }
 
     /**
@@ -165,11 +175,9 @@ public class MapsActivity extends FragmentActivity
             Log.v("WebService Connect","Sending new location to web service.");
             WebServiceConnector connector = new WebServiceConnector();
             connector.sendLocation(test1);
-            ccloc = test1;
+            mainUser = test1;
 
         }
-
-
 
     }
 
@@ -180,19 +188,27 @@ public class MapsActivity extends FragmentActivity
     public void refresh(View view)
     {
         Date curTime = new Date();
-        for(CCuser user:allUsers)
+        if(!allUsers.isEmpty())
         {
-            if(timeComp(curTime,user.getDate())<timediff)
+            for(CCuser user:allUsers)
             {
-                int position = allUsers.indexOf(user);
-                Marker m = allMarkers.get(position);
-                m.remove();
-                allMarkers.remove(m);
-                allUsers.remove(user);
+                if(timeComp(curTime,user.getDate())<timediff)
+                {
+                    int position = allUsers.indexOf(user);
+                    Marker m = allMarkers.get(position);
+                    m.remove();
+                    allMarkers.remove(m);
+                    allUsers.remove(user);
+                }
             }
         }
+        WebServiceConnector connector = new WebServiceConnector();
+        ArrayList<CCuser> newUser = connector.findPoints(mainUser);
+        if(!newUser.isEmpty())
+        {
+            displayMarker(newUser);
+        }
 
-        //TODO request for new markers
     }
 
 
@@ -203,6 +219,8 @@ public class MapsActivity extends FragmentActivity
     {
         return (int)(d1.getTime()/1000-d2.getTime()/1000);
     }
+
+
     /**
      * Recieves array of markers of nearby CCusers and pin point the location of
      * such users on the map
@@ -227,8 +245,11 @@ public class MapsActivity extends FragmentActivity
         Toast.makeText(this, "MyLocation button clicked", Toast.LENGTH_SHORT).show();
         // Return false so that we don't consume the event and the default behavior still occurs
         WebServiceConnector connector = new WebServiceConnector();
-        connector.findPoints(ccloc);
-
+        ArrayList<CCuser> newUser = connector.findPoints(mainUser);
+        if(!newUser.isEmpty())
+        {
+            displayMarker(newUser);
+        }
         return false;
     }
 
@@ -239,7 +260,7 @@ public class MapsActivity extends FragmentActivity
 
     @Override
     public void onConnected(Bundle connectionHint) {
-        LocationServices.FusedLocationApi.requestLocationUpdates (
+        LocationServices.FusedLocationApi.requestLocationUpdates(
                 mGoogleApiClient,
                 REQUEST,
                 this);
@@ -265,6 +286,15 @@ public class MapsActivity extends FragmentActivity
     public void onPause() {
         super.onPause();
         mGoogleApiClient.disconnect();
+    }
+
+    /**
+     * Wrapper method to retrieve the correct paired device
+     * @return the hashcode of the device or 0 if there is no such device
+     */
+    public int getDeviceHashCode() {
+        SharedPreferences settings = getPreferences(MODE_PRIVATE);
+        return settings.getInt(BluetoothDeviceListFragment.PREFS_KEY_SAVEDDEVICE, 0);
     }
 
     public void onFragmentInteraction(String id) {
