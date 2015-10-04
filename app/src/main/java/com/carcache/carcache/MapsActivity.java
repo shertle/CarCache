@@ -249,6 +249,7 @@ public class MapsActivity extends FragmentActivity
                 }
             }
         }
+
         LatLng newLatLng = mMap.getCameraPosition().target;
         mainUser.getLocation().setLongitude(newLatLng.longitude);
         mainUser.getLocation().setLatitude(newLatLng.latitude);
