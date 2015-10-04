@@ -18,30 +18,20 @@
         android:id="@+id/map"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        class="com.google.android.gms.maps.SupportMapFragment"/>
-    <LinearLayout
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="bottom|right"
-        android:background="#D000"
-        android:orientation="vertical"
-        android:padding="5dp">
-        <Button
-            android:id="@+id/get_my_location_button"
-            android:padding="8dp"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:onClick="showMyLocation"
-            android:text="@string/my_location"/>
-    </LinearLayout>
+        class="com.google.android.gms.maps.SupportMapFragment"
+        android:layout_above="@+id/button" />
+
 
     <Button
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="Refresh"
-        android:id="@+id/button"
+        android:id="@+id/refreshButton"
         android:onClick="refresh"
         android:layout_alignParentBottom="true"
-        android:layout_alignParentRight="true"
-        android:layout_alignParentEnd="true" />
+        android:layout_centerHorizontal="true"
+        android:background="@color/material_blue_grey_800"
+        android:singleLine="false"
+        android:textSize="20dp"
+        android:textColor="@color/white" />
 </RelativeLayout>
