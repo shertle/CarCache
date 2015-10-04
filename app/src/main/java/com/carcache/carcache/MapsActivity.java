@@ -18,6 +18,8 @@ import android.content.SharedPreferences;
 import android.location.Location;
 import android.location.LocationManager;
 import android.os.Bundle;
+import android.os.Handler;
+import android.preference.PreferenceManager;
 import android.support.v4.app.FragmentActivity;
 import android.util.Log;
 import android.view.View;
@@ -42,6 +44,7 @@ import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.skyfishjy.library.RippleBackground;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -60,7 +63,10 @@ public class MapsActivity extends FragmentActivity
     public static final String MAP_LOGGER = "MAP_LOGGER";
     public static final String CARCACHE_PREFS = "CarCachePrefs";
     public static final String PREFS_KEY_FIRSTLAUNCH = "FIRST_LAUNCH_KEY";
+    public static final String LAT_KEY = "Latitude key";
+    public static final String LON_KEY = "Longitude key";
 
+    RippleBackground rippleBackground;
 
     private int timediff=5;
     private GoogleApiClient mGoogleApiClient;
@@ -90,11 +96,14 @@ public class MapsActivity extends FragmentActivity
                 .addOnConnectionFailedListener(this)
                 .build();
 
-        SharedPreferences settings = getPreferences(MODE_PRIVATE);
-        boolean firstLaunch = settings.getBoolean(PREFS_KEY_FIRSTLAUNCH, true);
+        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
+        boolean firstLaunch = preferences.getBoolean(PREFS_KEY_FIRSTLAUNCH, true);
 
         BluetoothAdapter mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
         Set<BluetoothDevice> pairedDevices = mBluetoothAdapter.getBondedDevices();
+
+        rippleBackground =(RippleBackground)findViewById(R.id.content);
+
 
         /*
         List<String> s = new ArrayList<String>();
@@ -117,10 +126,11 @@ public class MapsActivity extends FragmentActivity
             fragmentTransaction.replace(R.id.fragment_container, fragment);
             fragmentTransaction.commit();
         }
-        else{
-            startService(new Intent(this, BluetoothListenerService.class));
+        else {
 
+            startService(new Intent(this, BluetoothListenerService.class));
         }
+
     }
 
 
@@ -214,6 +224,15 @@ public class MapsActivity extends FragmentActivity
      */
     public void refresh(View view)
     {
+        rippleBackground.startRippleAnimation();
+        final Handler handler = new Handler();
+        handler.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                // Do something after 5s = 5000ms
+                rippleBackground.stopRippleAnimation();
+            }
+        }, 3000);
 
         Date curTime = new Date();
         if(!allUsers.isEmpty())
@@ -230,11 +249,17 @@ public class MapsActivity extends FragmentActivity
                 }
             }
         }
+        LatLng newLatLng = mMap.getCameraPosition().target;
+        mainUser.getLocation().setLongitude(newLatLng.longitude);
+        mainUser.getLocation().setLatitude(newLatLng.latitude);
+
+
         WebServiceConnector connector = new WebServiceConnector();
         ArrayList<CCuser> newUser = connector.findPoints(mainUser);
         if(!newUser.isEmpty())
         {
             displayMarker(newUser);
+            displayParkedCar();
         }
 
     }
@@ -271,7 +296,18 @@ public class MapsActivity extends FragmentActivity
     }
 
 
+    public void displayParkedCar(){
+        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
+        float lat = preferences.getFloat(LAT_KEY,0);
+        float lon = preferences.getFloat(LON_KEY,0);
 
+        if(lat != 0 && lon != 0){
+            Marker mark = mMap.addMarker(new MarkerOptions()
+                            .position(new LatLng(lat, lon))
+                    );
+
+        }
+    }
 
     @Override
     public boolean onMyLocationButtonClick() {

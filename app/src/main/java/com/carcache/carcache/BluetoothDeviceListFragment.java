@@ -4,9 +4,11 @@ import android.app.Activity;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.app.Fragment;
+import android.preference.PreferenceManager;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -18,6 +20,8 @@ import android.widget.Button;
 import android.widget.ListAdapter;
 import android.widget.TextView;
 
+
+import com.carcache.carcache.services.BluetoothListenerService;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -139,9 +143,13 @@ public class BluetoothDeviceListFragment extends Fragment implements AbsListView
     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
         BluetoothDevice bd = mDeviceList.get(position).getDevice();
         Log.v(BLUETOOTH_LOGGER, "The device is: " + bd.getName());
+        Log.v(BLUETOOTH_LOGGER, "The Mac address is: " + bd.getAddress());
 
         saveDevice(bd);
         mRefreshButton.setVisibility(View.VISIBLE);
+
+        getActivity().startService(new Intent(getActivity(), BluetoothListenerService.class));
+
 
         Fragment toRemove = this;
         this.getActivity().getFragmentManager().beginTransaction().remove(toRemove).commit();
@@ -160,8 +168,11 @@ public class BluetoothDeviceListFragment extends Fragment implements AbsListView
      * @param bd the BluetoothDevice to save
      */
     public void saveDevice(BluetoothDevice bd) {
-        SharedPreferences settings = this.getActivity().getPreferences(Context.MODE_PRIVATE);
-        SharedPreferences.Editor editor = settings.edit();
+        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(getActivity().getApplicationContext());
+        SharedPreferences.Editor editor = preferences.edit();
+
+        Log.e("ASDF",bd.getAddress());
+
         editor.putString(PREFS_KEY_SAVEDDEVICE, bd.getAddress());
         editor.putBoolean(MapsActivity.PREFS_KEY_FIRSTLAUNCH, false);
         editor.apply();

@@ -17,6 +17,7 @@ import android.support.annotation.Nullable;
 import android.util.Log;
 import android.widget.Toast;
 
+import com.carcache.carcache.MapsActivity;
 import com.carcache.carcache.connectors.WebServiceConnector;
 import com.carcache.carcache.models.CCuser;
 import com.google.android.gms.common.ConnectionResult;
@@ -36,7 +37,16 @@ public class BluetoothListenerService extends Service
     private static String TAG = "Bluetooth Change Handler";
     private String macAddress = "";
     public static final String PREFS_KEY_SAVEDDEVICE = "CarCache Saved Device";
+    public static final String LAT_KEY = "Latitude key";
+    public static final String LON_KEY = "Longitude key";
+
     private GoogleApiClient mGoogleApiClient;
+
+    public enum Intention{
+        INTENTION_CONNECT, INTENTION_DISCONNECT
+    }
+
+    private Intention intention;
 
     @Nullable
     @Override
@@ -58,7 +68,7 @@ public class BluetoothListenerService extends Service
         this.registerReceiver(mReceiver, filter2);
         this.registerReceiver(mReceiver, filter3);
 
-        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
+        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
         macAddress = preferences.getString(PREFS_KEY_SAVEDDEVICE,"");
     }
 
@@ -98,8 +108,15 @@ public class BluetoothListenerService extends Service
                 Log.v(TAG, "ACTION_ACL_CONNECTED");
                 showSuccessfulBroadcast("ACTION_ACL_CONNECTED");
 
+                showSuccessfulBroadcast("Saved = " + macAddress);
+                showSuccessfulBroadcast("New = " + device.getAddress());
+                Log.e(TAG,"Saved = " + macAddress);
+                Log.e(TAG,"New = " + device.getAddress());
+
                 if(macAddress.equals( device.getAddress())){
                     Log.v(TAG, "Connected to device with matching mac address: " + macAddress);
+
+                    intention = Intention.INTENTION_CONNECT;
 
                     // Create google api client.
                     mGoogleApiClient = new GoogleApiClient.Builder(BluetoothListenerService.this)
@@ -107,6 +124,8 @@ public class BluetoothListenerService extends Service
                             .addConnectionCallbacks(BluetoothListenerService.this)
                             .addOnConnectionFailedListener(BluetoothListenerService.this)
                             .build();
+
+                    mGoogleApiClient.connect();
 
                 }
 
@@ -124,9 +143,19 @@ public class BluetoothListenerService extends Service
                 //Device has disconnected
                 Log.v(TAG, "ACTION_ACL_DISCONNECTED" );
                 showSuccessfulBroadcast("ACTION_ACL_DISCONNECTED");
-                if(macAddress.equals( device.getAddress())){
+                /*if(macAddress.equals( device.getAddress())){
                     Log.v(TAG, "Disconnected to device with matching mac address: " + macAddress);
-                }
+
+                    intention = Intention.INTENTION_DISCONNECT;
+
+                    mGoogleApiClient = new GoogleApiClient.Builder(BluetoothListenerService.this)
+                            .addApi(LocationServices.API)
+                            .addConnectionCallbacks(BluetoothListenerService.this)
+                            .addOnConnectionFailedListener(BluetoothListenerService.this)
+                            .build();
+
+                    //mGoogleApiClient.connect();
+                }*/
 
             }
         }
@@ -146,14 +175,26 @@ public class BluetoothListenerService extends Service
         Location mLastLocation = LocationServices.FusedLocationApi.getLastLocation(
                 mGoogleApiClient);
 
-        Location newLocation = new Location("newLoc");
+        if(intention == Intention.INTENTION_CONNECT) {
 
-        CCuser toSend = new CCuser();
-        toSend.setDate(new Date());
-        toSend.setLocation(mLastLocation);
+            Log.v(TAG,"Intent connect");
+            Location newLocation = new Location("newLoc");
 
-        new WebServiceConnector().sendLocation(toSend);
+            CCuser toSend = new CCuser();
+            toSend.setDate(new Date());
+            toSend.setLocation(mLastLocation);
 
+            new WebServiceConnector().sendLocation(toSend);
+        }
+        else{
+
+            SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+            SharedPreferences.Editor editor = preferences.edit();
+            editor.putFloat(LAT_KEY, (float)mLastLocation.getLatitude());
+            editor.putFloat(LON_KEY, (float) mLastLocation.getLongitude());
+            editor.apply();
+
+        }
     }
 
     @Override
