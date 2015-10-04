@@ -68,11 +68,11 @@ public class MapsActivity extends FragmentActivity
 
     RippleBackground rippleBackground;
 
-    private int timediff=5;
+    //private int timediff=5;
     private GoogleApiClient mGoogleApiClient;
     private GoogleMap mMap;
-    private ArrayList<CCuser> allUsers = new ArrayList<>();
-    private ArrayList<Marker> allMarkers = new ArrayList<>();
+    //private ArrayList<CCuser> allUsers = new ArrayList<>();
+    //private ArrayList<Marker> allMarkers = new ArrayList<>();
     private CCuser mainUser;
 
     private static final LocationRequest REQUEST = LocationRequest.create()
@@ -234,6 +234,7 @@ public class MapsActivity extends FragmentActivity
             }
         }, 3000);
 
+        /*
         Date curTime = new Date();
         if(!allUsers.isEmpty())
         {
@@ -248,7 +249,8 @@ public class MapsActivity extends FragmentActivity
                     allUsers.remove(user);
                 }
             }
-        }
+        }*/
+        mMap.clear();
         LatLng newLatLng = mMap.getCameraPosition().target;
         mainUser.getLocation().setLongitude(newLatLng.longitude);
         mainUser.getLocation().setLatitude(newLatLng.latitude);
@@ -267,12 +269,12 @@ public class MapsActivity extends FragmentActivity
 
     /*
     helper method to find difference in seconds of the two times
-     */
+
     private int timeComp(Date d1, Date d2)
     {
         return (int)(d1.getTime()/1000-d2.getTime()/1000);
     }
-
+    */
 
     /**
      * Recieves array of markers of nearby CCusers and pin point the location of
@@ -287,11 +289,13 @@ public class MapsActivity extends FragmentActivity
             Date date = m.getDate();
             long difference = nowDate.getTime() - date.getTime();
 
-            Marker mark = mMap.addMarker(new MarkerOptions()
+            mMap.addMarker(new MarkerOptions()
                     .position(new LatLng(l.getLatitude(), l.getLongitude()))
                     .title(difference/1000/60 + " Mins Ago"));
+            /*
             allUsers.add(m);
             allMarkers.add(mark);
+            */
         }
     }
 
