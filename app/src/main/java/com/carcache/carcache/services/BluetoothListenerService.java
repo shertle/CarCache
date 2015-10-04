@@ -8,20 +8,35 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
+import android.location.Location;
+import android.location.LocationListener;
+import android.os.Bundle;
 import android.os.IBinder;
 import android.preference.PreferenceManager;
 import android.support.annotation.Nullable;
 import android.util.Log;
 import android.widget.Toast;
 
+import com.carcache.carcache.connectors.WebServiceConnector;
+import com.carcache.carcache.models.CCuser;
+import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.location.LocationServices;
+
+import java.util.Date;
+
 /**
  * Created by zizhouzhai on 10/3/15.
  */
-public class BluetoothListenerService extends Service {
+public class BluetoothListenerService extends Service
+        implements GoogleApiClient.ConnectionCallbacks,
+        GoogleApiClient.OnConnectionFailedListener,
+        LocationListener {
 
     private static String TAG = "Bluetooth Change Handler";
     private String macAddress = "";
     public static final String PREFS_KEY_SAVEDDEVICE = "CarCache Saved Device";
+    private GoogleApiClient mGoogleApiClient;
 
     @Nullable
     @Override
@@ -83,8 +98,16 @@ public class BluetoothListenerService extends Service {
                 Log.v(TAG, "ACTION_ACL_CONNECTED");
                 showSuccessfulBroadcast("ACTION_ACL_CONNECTED");
 
-                if(macAddress == device.getAddress()){
+                if(macAddress.equals( device.getAddress())){
                     Log.v(TAG, "Connected to device with matching mac address: " + macAddress);
+
+                    // Create google api client.
+                    mGoogleApiClient = new GoogleApiClient.Builder(BluetoothListenerService.this)
+                            .addApi(LocationServices.API)
+                            .addConnectionCallbacks(BluetoothListenerService.this)
+                            .addOnConnectionFailedListener(BluetoothListenerService.this)
+                            .build();
+
                 }
 
             } else if (BluetoothAdapter.ACTION_DISCOVERY_FINISHED.equals(action)) {
@@ -101,7 +124,7 @@ public class BluetoothListenerService extends Service {
                 //Device has disconnected
                 Log.v(TAG, "ACTION_ACL_DISCONNECTED" );
                 showSuccessfulBroadcast("ACTION_ACL_DISCONNECTED");
-                if(macAddress == device.getAddress()){
+                if(macAddress.equals( device.getAddress())){
                     Log.v(TAG, "Disconnected to device with matching mac address: " + macAddress);
                 }
 
@@ -115,4 +138,51 @@ public class BluetoothListenerService extends Service {
     }
 
 
+    @Override
+    public void onConnected(Bundle bundle) {
+
+        Log.v(TAG,"Connected to google api");
+
+        Location mLastLocation = LocationServices.FusedLocationApi.getLastLocation(
+                mGoogleApiClient);
+
+        Location newLocation = new Location("newLoc");
+
+        CCuser toSend = new CCuser();
+        toSend.setDate(new Date());
+        toSend.setLocation(mLastLocation);
+
+        new WebServiceConnector().sendLocation(toSend);
+
+    }
+
+    @Override
+    public void onConnectionSuspended(int i) {
+
+    }
+
+    @Override
+    public void onConnectionFailed(ConnectionResult connectionResult) {
+
+    }
+
+    @Override
+    public void onLocationChanged(Location location) {
+
+    }
+
+    @Override
+    public void onStatusChanged(String provider, int status, Bundle extras) {
+
+    }
+
+    @Override
+    public void onProviderEnabled(String provider) {
+
+    }
+
+    @Override
+    public void onProviderDisabled(String provider) {
+
+    }
 }

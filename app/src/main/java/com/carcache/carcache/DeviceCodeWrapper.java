@@ -7,24 +7,17 @@ package com.carcache.carcache;
  * code when they need it
  */
 public class DeviceCodeWrapper {
-    private static DeviceCodeWrapper instance;
 
-    private int deviceCode = 0;
+    private static String macAddress = null;
 
     private DeviceCodeWrapper() {}
 
-    public static DeviceCodeWrapper getInstance() {
-        if (instance == null) {
-            instance = new DeviceCodeWrapper();
-        }
-        return instance;
+    public static String getMacAddress(){
+        return macAddress;
     }
 
-    public int getDeviceCode() {
-        return deviceCode;
+    public static void setMacAddress(String macAddress){
+
     }
 
-    public void setDeviceCode(int code) {
-        this.deviceCode = code;
-    }
 }

@@ -132,6 +132,23 @@ public class MapsActivity extends FragmentActivity
         googleMap.setMyLocationEnabled(true);
         googleMap.setOnMyLocationButtonClickListener(this);
 
+        googleMap.setOnMapLongClickListener(new GoogleMap.OnMapLongClickListener() {
+            @Override
+            public void onMapLongClick(LatLng latLng) {
+
+                CCuser newUser = new CCuser();
+                Location newLocation = new Location("");
+                newLocation.setLatitude(latLng.latitude);
+                newLocation.setLongitude(latLng.longitude);
+
+                newUser.setLocation(newLocation);
+                newUser.setDate(new Date());
+
+                new WebServiceConnector().sendLocation(newUser);
+
+            }
+        });
+
 
         mMap = googleMap;
 
@@ -229,11 +246,17 @@ public class MapsActivity extends FragmentActivity
      */
     public void displayMarker(ArrayList<CCuser> markers)
     {
+        Date nowDate = new Date();
+
         for(CCuser m : markers)
         {
             Location l = m.getLocation();
+            Date date = m.getDate();
+            long difference = nowDate.getTime() - date.getTime();
+
             Marker mark = mMap.addMarker(new MarkerOptions()
-                    .position(new LatLng(l.getLatitude(), l.getLongitude())));
+                    .position(new LatLng(l.getLatitude(), l.getLongitude()))
+                    .title(difference/1000/60 + " Mins Ago"));
             allUsers.add(m);
             allMarkers.add(mark);
         }
