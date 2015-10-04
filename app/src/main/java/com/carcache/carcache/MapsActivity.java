@@ -1,10 +1,6 @@
 package com.carcache.carcache;
 
-/*
-import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentTransaction;
-import android.support.v4.app.FragmentManager;
-*/
+
 import android.app.FragmentManager;
 import android.app.Fragment;
 import android.app.FragmentTransaction;
@@ -44,8 +40,7 @@ import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.model.Marker;
 
-import java.util.ArrayList;
-import java.util.List;
+
 import java.util.Set;
 
 public class MapsActivity extends FragmentActivity
@@ -172,8 +167,6 @@ public class MapsActivity extends FragmentActivity
             connector.sendLocation(test1);
 
         }
-
-
 
     }
 

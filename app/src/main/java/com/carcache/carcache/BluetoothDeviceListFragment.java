@@ -17,7 +17,6 @@ import android.widget.ArrayAdapter;
 import android.widget.ListAdapter;
 import android.widget.TextView;
 
-import com.carcache.carcache.DeviceListItem;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -36,17 +35,6 @@ public class BluetoothDeviceListFragment extends Fragment implements AbsListView
 
     public static final String BLUETOOTH_LOGGER = "BLUETOOTH_LOGGER";
     public static final String PREFS_KEY_SAVEDDEVICE = "CarCache Saved Device";
-
-    /*
-    // TODO: Rename parameter arguments, choose names that match
-    // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-    private static final String ARG_PARAM1 = "param1";
-    private static final String ARG_PARAM2 = "param2";
-
-    // TODO: Rename and change types of parameters
-    private String mParam1;
-    private String mParam2;
-    */
 
     private List<DeviceListItem> mDeviceList;
 
@@ -67,8 +55,6 @@ public class BluetoothDeviceListFragment extends Fragment implements AbsListView
     public static BluetoothDeviceListFragment newInstance(String param1, String param2) {
         BluetoothDeviceListFragment fragment = new BluetoothDeviceListFragment();
         Bundle args = new Bundle();
-        //args.putString(ARG_PARAM1, param1);
-        //args.putString(ARG_PARAM2, param2);
         fragment.setArguments(args);
         return fragment;
     }
@@ -83,13 +69,6 @@ public class BluetoothDeviceListFragment extends Fragment implements AbsListView
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
-        /*
-        if (getArguments() != null) {
-            mParam1 = getArguments().getString(ARG_PARAM1);
-            mParam2 = getArguments().getString(ARG_PARAM2);
-        }
-        */
 
         BluetoothAdapter mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
         Set<BluetoothDevice> pairedDevices = mBluetoothAdapter.getBondedDevices();
